@@ -2,7 +2,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
-.end
 .env.prod
 .env.test
 # C extensions
