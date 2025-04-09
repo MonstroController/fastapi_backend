@@ -42,9 +42,8 @@ class ProfilesRepository(BaseRepository):
                             f"interval '{settings.profiles.TIME_BEFORE_DATE_BLOCK} hours'"
                         )
                     ),
-        ProfilesOrm.folder.isnot(None),
-        ProfilesOrm.folder != '',
-        func.regexp_match(ProfilesOrm.folder, '^[1,]+$') != None
+                    ProfilesOrm.folder.op("~")("^([1,]+)$"),
+                    not_(ProfilesOrm.folder.op("~")("[^1,]")),
                 )
             )
             .limit(party_fraction)
@@ -96,41 +95,31 @@ class ProfilesRepository(BaseRepository):
     async def get_spent_profiles_in_working_party(self, session: AsyncSession):
         """Находит профиля из рабочей группы, которые уже отработали"""
         query = select(ProfilesOrm).where(
-        and_(
-        ProfilesOrm.party == settings.profiles.WORKING_PARTY,
-        ProfilesOrm.folder.isnot(None),
-         ProfilesOrm.folder != '',
-            or_(
-            func.regexp_match(ProfilesOrm.folder, '[^1,]') != None,  # любой символ кроме 1 и запятой
-            func.regexp_match( ProfilesOrm.folder, '[a-zA-Z]') != None  # или конкретно буквы
-        )
-    )
+            and_(
+                ProfilesOrm.party == "s_mix",
+                not_(ProfilesOrm.folder.op("~")("^([1,]+)$")),
+                ProfilesOrm.folder.op("~")("[^1,]"),
+            )
         )
         res = await session.execute(query)
         return res.scalars().all()
-
+    
     async def get_overtime_profiles(self, session: AsyncSession, min_date):
         """Находит профиля из все групп s_ которые старше min_date"""
-        query = select(ProfilesOrm.pid, ProfilesOrm.folder).where(
-            and_(ProfilesOrm.party.like("s_%"), ProfilesOrm.data_create <= min_date)
-        )
+        query = select(ProfilesOrm.pid, ProfilesOrm.folder).where(and_(ProfilesOrm.party.like("s_%"), ProfilesOrm.data_create <= min_date))
         res = await session.execute(query)
         profiles = res.all()
         logger.info(f"Get s_ capacity for cleaning to s_>72: {len(profiles)}")
         return res.scalars().all()
-
-    async def delete_from_trash_and_overtime(
-        self, session: AsyncSession, trash_party, min_date
-    ):
-        query = delete(ProfilesOrm).where(
-            and_(
-                or_(ProfilesOrm.party == trash_party, ProfilesOrm.party == "s>72"),
-                ProfilesOrm.data_create <= min_date,
-            )
-        )
+    
+    async def delete_from_trash_and_overtime(self, session: AsyncSession, trash_party, min_date):
+        query = delete(ProfilesOrm).where(and_(or_(ProfilesOrm.party == trash_party, ProfilesOrm.party == "s>72"),  ProfilesOrm.data_create <= min_date))
         res = await session.execute(query)
         await session.commit()
         logger.info(f"{res.rowcount} profiles was deleted from {trash_party}")
+        
+
+
 
 
 profiles_repository: ProfilesRepository = ProfilesRepository()

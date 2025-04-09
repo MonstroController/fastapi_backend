@@ -45,7 +45,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[dict, None]:
 
         scheduler.add_job(
             delete_trash_and_overtime,
-            trigger=IntervalTrigger(seconds=30),
+            trigger=IntervalTrigger(minutes=2),
             id="currency_delete_parties",
             replace_existing=True
         )
@@ -117,5 +117,5 @@ app = create_app()
 if __name__ == "__main__":
     import uvicorn
     logger.info(f"Start the application")
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, workers=5)
    
