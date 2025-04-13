@@ -4,6 +4,9 @@ __pycache__/
 *$py.class
 .env.prod
 .env.test
+.env
+nginx.conf
+
 # C extensions
 *.so
 

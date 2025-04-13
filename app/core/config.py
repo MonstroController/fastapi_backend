@@ -12,11 +12,6 @@ class DBSettings(BaseSettings):
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
 
-    CLICKHOUSE_HOST: str
-    CLICKHOUSE_PORT: int
-    CLICKHOUSE_USERNAME: str
-    CLICKHOUSE_PASSWORD: str
-
     @property
     def DATABASE_URL_asyncpg(self):
         # DSN
