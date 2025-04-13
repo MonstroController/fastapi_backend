@@ -37,9 +37,9 @@ class ProfilesService(BaseService):
             )
 
             if len(parties) != 0 and (party_fraction := shortage // len(parties)) != 0:
-                print(shortage, party_fraction)
+    
                 for party in parties:
-                    await self.repository.update_profiles_to_working_party(
+                    res_count = await self.repository.update_profiles_to_working_party(
                         session=session,
                         party_fraction=party_fraction,
                         party=party,
@@ -47,6 +47,8 @@ class ProfilesService(BaseService):
                         max_date=max_date,
                         working_party=settings.profiles.WORKING_PARTY,
                     )
+                    if res_count < party_fraction:
+                        party_fraction += party_fraction - res_count
 
     async def from_working_party_to_trash_party(
         self,
@@ -55,48 +57,36 @@ class ProfilesService(BaseService):
         big_age_party="s_>72",
     ):
 
-        profiles = await self.repository.get_spent_profiles_in_working_party(
+        profiles = await self.repository.select_spent_profiles_in_working_party(
             session=session
         )
-        logger.info(
-            f"Get spent profiles in working party {settings.profiles.WORKING_PARTY} for cleaning to A: {len(profiles)} - count"
-        )
-        count = 0
         for profile in profiles:
-
-            count = await self.update(
-                session=session,
-                filters=ProfileFilters(pid=profile.pid),
-                values=ProfileFilters(
-                    party=trash_party,
-                ),
-            )
+            folder = profile.folder
+            count = len(folder.split(","))
+            if count > 1:
+                await self.repository.update(session=session, filters=ProfileFilters(pid=profile.pid), values=ProfileFilters(party=f"{settings.profiles.TRASH_PARTY}_{count}"))
+            await session.commit()
+            
         logger.info(
-            f"Set {count} profiles to {trash_party} party from {settings.profiles.WORKING_PARTY}"
+            f"Set {len(profiles)} profiles to {trash_party} party from {settings.profiles.WORKING_PARTY}"
         )
 
     async def clean_to_overtime_party(
         self,
         session: AsyncSession,
-        overtime_party: int = settings.profiles.MAX_LIFE_HOURS_TO_WORKING_PARTY,
+        max_hours_life: int = settings.profiles.MAX_LIFE_HOURS_TO_WORKING_PARTY,
+        overtime_party: str = "s>72"
     ):
-        min_date = hours_to_dates(max_hours_life=overtime_party)
-        profiles = await self.repository.get_overtime_profiles(
+        min_date = hours_to_dates(max_hours_life=max_hours_life)
+        count = await self.repository.update_overtime_profiles(
             session=session, min_date=min_date
         )
-        count = 0
-        for profile in profiles:
-            count = await self.update(
-                session=session,
-                filters=ProfileFilters(pid=profile.pid),
-                values=ProfileFilters(
-                    party=overtime_party,
-                ),
-            )
-        logger.info(f"Set {count} profiles to {overtime_party} party")
+        logger.info(f"Set {count} profiles to {overtime_party}")
+    
+
 
     async def delete_trash_and_overtime(
-        self, session: AsyncSession, days_limit: int = 5
+        self, session: AsyncSession, days_limit: int = 40
     ):
         min_date = hours_to_dates(max_hours_life=days_limit * 24)
         await self.repository.delete_from_trash_and_overtime(

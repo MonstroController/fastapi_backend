@@ -47,7 +47,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[dict, None]:
             delete_trash_and_overtime,
             trigger=IntervalTrigger(minutes=2),
             id="currency_delete_parties",
-            replace_existing=True
         )
         scheduler.start()
         logger.info("Планировщик обновления ")
