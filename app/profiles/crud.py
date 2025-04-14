@@ -106,7 +106,7 @@ class ProfilesRepository(BaseRepository):
                     ProfilesOrm.folder.op("~")("[^1,]"),
                 )
             )
-            .values(party=settings.profiles.WORKING_PARTY)
+            .values(party=settings.profiles.TRASH_PARTY)
         )
         res = await session.execute(query)
         logger.info(
