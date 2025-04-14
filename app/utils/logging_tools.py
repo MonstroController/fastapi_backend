@@ -2,10 +2,14 @@ import logging
 from colorama import Fore, Style
 import datetime
 
+
 class SensitiveDataFilter(logging.Filter):
     def filter(self, record):
-        return not any(word in record.getMessage().lower() for word in ["password", "token", "secret"])
-    
+        return not any(
+            word in record.getMessage().lower()
+            for word in ["password", "token", "secret"]
+        )
+
 
 class ColoredFormatter(logging.Formatter):
     COLORS = {
@@ -13,17 +17,19 @@ class ColoredFormatter(logging.Formatter):
         logging.INFO: Fore.GREEN,
         logging.WARNING: Fore.YELLOW,
         logging.ERROR: Fore.RED,
-        logging.CRITICAL: Fore.RED + Style.BRIGHT
+        logging.CRITICAL: Fore.RED + Style.BRIGHT,
     }
 
     def format(self, record):
         if record.levelno in self.COLORS:
-            record.levelname = (f"{self.COLORS[record.levelno]}"
-                                f"{record.levelname}{Style.RESET_ALL}")
-            record.msg = (f"{self.COLORS[record.levelno]}"
-                          f"{record.msg}{Style.RESET_ALL}")
+            record.levelname = (
+                f"{self.COLORS[record.levelno]}" f"{record.levelname}{Style.RESET_ALL}"
+            )
+            record.msg = (
+                f"{self.COLORS[record.levelno]}" f"{record.msg}{Style.RESET_ALL}"
+            )
         return super().format(record)
-    
+
 
 # class ElasticsearchHandler(logging.Handler):
 #     def __init__(self, host='localhost', index_name='app-logs'):
@@ -55,7 +61,7 @@ class ColoredFormatter(logging.Formatter):
 #             print(e)
 
 
-#Использование
+# Использование
 
 # es_handler = ElasticsearchHandler(
 #     host="localhost",

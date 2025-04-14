@@ -7,6 +7,7 @@ import random
 
 logger = logging.getLogger(__name__)
 
+
 class KeywordsRepository(BaseRepository):
     model = VideoKeywordsOrm
 
@@ -17,5 +18,3 @@ class KeywordsRepository(BaseRepository):
 
 
 keywords_repository: KeywordsRepository = KeywordsRepository()
-
-        

@@ -98,7 +98,7 @@ class BaseRepository(Generic[T]):
         self, session: AsyncSession, filters: BaseModel, values: BaseModel
     ):
         """filters: Фильтры определяют обьекты, которые будут обновляться\n
-            values: Определяют какие значения вместо каких полей подставить"""
+        values: Определяют какие значения вместо каких полей подставить"""
         filter_dict = filters.model_dump(exclude_unset=True)
         values_dict = values.model_dump(exclude_unset=True)
         logger.info(

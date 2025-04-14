@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Path, Body,Query
+from fastapi import APIRouter, Depends, Path, Body, Query
 from typing import Annotated
 from .service import click_result_service
 from .schemas import ClickResult, ClickResultFilter
@@ -40,12 +40,12 @@ async def get_result_by_pid(
         session=session, data_pid=click_result_pid
     )
 
+
 @router.post("", response_model=list[ClickResult])
 async def get_result_by_filter(
     filter: Annotated[ClickResultFilter, Body], session: AsyncSession = SessionDep
 ) -> list[ClickResult]:
     return await click_result_service.find_all(session=session, filters=filter)
-    
 
 
 @router.get("/domain/{domain}", response_model=list[ClickResult])

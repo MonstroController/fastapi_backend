@@ -18,9 +18,10 @@ conn_string = f"postgresql://{username}:{password}@{host}:{port}/{database}"
 engine = create_engine(conn_string)
 
 with engine.connect() as conn:
-    res = conn.execute(text("""DELETE FROM profiles WHERE data_create < now() - interval '5 days' """))
-    conn.commit()        
-
+    res = conn.execute(
+        text("""DELETE FROM profiles WHERE data_create < now() - interval '5 days' """)
+    )
+    conn.commit()
 
 
 # # Названия колонок в таблице
@@ -207,27 +208,29 @@ with engine.connect() as conn:
 
 # Пример использования
 load_to_clickhouse(
-    file_path='C:\\Users\\Fedor\\Desktop\\keywords225\\keywords225.tsv',
-    host='gm0pw0r5n1.westus3.azure.clickhouse.cloud',
-    user='default',
-    password='V_YqSv9ERe3Ac',
-    fraction=1/7
+    file_path="C:\\Users\\Fedor\\Desktop\\keywords225\\keywords225.tsv",
+    host="gm0pw0r5n1.westus3.azure.clickhouse.cloud",
+    user="default",
+    password="V_YqSv9ERe3Ac",
+    fraction=1 / 7,
 )
-
 
 
 async def from_s_mix():
     async with db_helper.session_factory() as session:
-        query = select(func.count()).select_from(ProfilesOrm).where(ProfilesOrm.party == "s_mix")
+        query = (
+            select(func.count())
+            .select_from(ProfilesOrm)
+            .where(ProfilesOrm.party == "s_mix")
+        )
         res = await session.execute(query)
         profiles_count = res.scalar()
         logger.info(f"Get s_mix capacity: {profiles_count}")
         if profiles_count > 0:
 
             query = select(ProfilesOrm.pid, ProfilesOrm.folder).where(
-                        ProfilesOrm.folder.like("1,%"),
- 
-                    )
+                ProfilesOrm.folder.like("1,%"),
+            )
             res = await session.execute(query)
             parties = res.scalars().all()
             print(res)

@@ -41,7 +41,9 @@ class DatabaseSessionManager:
             await session.close()
 
     @asynccontextmanager
-    async def managed_transaction(self, session: AsyncSession) -> AsyncGenerator[None, None]:
+    async def managed_transaction(
+        self, session: AsyncSession
+    ) -> AsyncGenerator[None, None]:
         """
         Управляет транзакцией, осуществляя коммит или откат при ошибке.
 
@@ -102,7 +104,6 @@ class DatabaseSessionManager:
         - Декорированный асинхронный метод с дополнительными параметрами управления транзакцией.
         """
 
-
         def decorator(method):
             @wraps(method)
             async def wrapper(*args, **kwargs):
@@ -110,7 +111,11 @@ class DatabaseSessionManager:
                     try:
                         # Устанавливаем уровень изоляции, если он указан
                         if isolation_level:
-                            await session.execute(text(f"SET TRANSACTION ISOLATION LEVEL {isolation_level}"))
+                            await session.execute(
+                                text(
+                                    f"SET TRANSACTION ISOLATION LEVEL {isolation_level}"
+                                )
+                            )
 
                         # Выполняем декорируемый метод
                         result = await method(*args, session=session, **kwargs)

@@ -4,7 +4,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def hours_to_dates(min_hours_life = 0, max_hours_life = 0):
+
+def hours_to_dates(min_hours_life=0, max_hours_life=0):
     """get dates interval (min and max dates) from min and max hours of life"""
 
     min_days = min_hours_life // 24
@@ -18,5 +19,3 @@ def hours_to_dates(min_hours_life = 0, max_hours_life = 0):
     elif max_hours_life == 0:
         return func.now() - max_interval
     return func.now() - min_interval, func.now() - max_interval
-
-

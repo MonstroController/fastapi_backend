@@ -13,7 +13,9 @@ class ClickResultsOrm(Base):
     error: Mapped[bool]
     pos: Mapped[int]
     copyname: Mapped[str]
-    profile_id: Mapped[int] = mapped_column(ForeignKey("profiles.pid", ondelete="SET NULL"), nullable=True)
+    profile_id: Mapped[int] = mapped_column(
+        ForeignKey("profiles.pid", ondelete="SET NULL"), nullable=True
+    )
     data_create: Mapped[datetime.datetime]
     yacount: Mapped[int]
     metrikacount: Mapped[int]

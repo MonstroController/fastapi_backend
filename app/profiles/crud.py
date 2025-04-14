@@ -5,6 +5,8 @@ from sqlalchemy import select, func, update, not_, and_, text, delete, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 import logging
+from app.stats.service import stats_service
+from app.stats.schemas import StatsFilter
 from .utils import hours_to_dates
 
 
@@ -35,16 +37,19 @@ class ProfilesRepository(BaseRepository):
                 and_(
                     ProfilesOrm.party == party,
                     ProfilesOrm.data_create.between(min_date, max_date),
-                    ProfilesOrm.date_block <= func.now() + text(f"interval '{settings.profiles.TIME_BEFORE_DATE_BLOCK} hours'"),
+                    ProfilesOrm.date_block
+                    <= func.now()
+                    + text(
+                        f"interval '{settings.profiles.TIME_BEFORE_DATE_BLOCK} hours'"
+                    ),
                     ProfilesOrm.folder.op("~")("^([1,]+)$"),
                     not_(ProfilesOrm.folder.op("~")("[^1,]")),
                 )
             )
             .limit(party_fraction)
             .cte("selected_ids")
-       
         )
-      
+
         update_stmt = (
             update(ProfilesOrm)
             .where(ProfilesOrm.pid.in_(select(selected_ids.c.pid)))
@@ -60,7 +65,6 @@ class ProfilesRepository(BaseRepository):
         logger.info(
             f"For party {party}: update {res.rowcount} profiles to new party: {working_party}"
         )
-        await session.commit()
         return res.rowcount
 
     async def get_parties_for_working_party(
@@ -89,34 +93,54 @@ class ProfilesRepository(BaseRepository):
         res = await session.execute(query)
         return res.scalars().all()
 
-    async def select_spent_profiles_in_working_party(self, session: AsyncSession):
+    async def update_spent_profiles_in_working_party(self, session: AsyncSession):
         """Находит профиля из рабочей группы, которые уже отработали"""
-        query = select(ProfilesOrm).where(
+        query = (
+            update(ProfilesOrm)
+            .where(
+                and_(
+                    ProfilesOrm.party == settings.profiles.WORKING_PARTY,
+                    not_(ProfilesOrm.folder.op("~")("^([1,]+)$")),
+                    ProfilesOrm.folder.op("~")("[^1,]"),
+                )
+            )
+            .values(party=settings.profiles.WORKING_PARTY)
+        )
+        res = await session.execute(query)
+        logger.info(
+            f"Set {res.rowcount} profiles to {settings.profiles.TRASH_PARTY} party from {settings.profiles.WORKING_PARTY}"
+        )
+        return res.rowcount
+
+    async def update_overtime_profiles(self, session: AsyncSession, min_date) -> int:
+        """Находит профиля из все групп s_ которые старше min_date и обновляет поле party"""
+
+        query = (
+            update(ProfilesOrm)
+            .where(
+                and_(
+                    ProfilesOrm.party.like("s_%"),
+                    ProfilesOrm.data_create <= min_date,
+                    ProfilesOrm.party != "s>72",
+                )
+            )
+            .values(party="s>72")
+        )
+        res = await session.execute(query)
+        logger.info(f"Set {res.rowcount} profiles to s>72")
+        return res.rowcount
+
+    async def delete_from_trash_and_overtime(
+        self, session: AsyncSession, trash_party, min_date
+    ):
+        query = delete(ProfilesOrm).where(
             and_(
-                ProfilesOrm.party == "s_mix",
-                not_(ProfilesOrm.folder.op("~")("^([1,]+)$")),
-                ProfilesOrm.folder.op("~")("[^1,]"),
+                ProfilesOrm.data_create <= min_date, not_(ProfilesOrm.party.like("f_"))
             )
         )
         res = await session.execute(query)
-        return res.scalars().all()
-    
-    async def update_overtime_profiles(self, session: AsyncSession, min_date) -> int:
-        """Находит профиля из все групп s_ которые старше min_date и обновляет поле party"""
-        
-        query = update(ProfilesOrm).where(and_(ProfilesOrm.party.like("s_%"), ProfilesOrm.data_create <= min_date)).values(party = "s>72")
-        res = await session.execute(query)
-        await session.commit()
-        return res.rowcount
-    
-    async def delete_from_trash_and_overtime(self, session: AsyncSession, trash_party, min_date):
-        query = delete(ProfilesOrm).where(and_(ProfilesOrm.data_create <= min_date, not_(ProfilesOrm.party.like("f_"))))
-        res = await session.execute(query)
-        await session.commit()
         logger.info(f"{res.rowcount} profiles was deleted")
-        
-
-
+        return res.rowcount
 
 
 profiles_repository: ProfilesRepository = ProfilesRepository()

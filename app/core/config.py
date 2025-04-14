@@ -21,17 +21,16 @@ class DBSettings(BaseSettings):
 
 
 class ProfilesController(BaseSettings):
-    NORMAL_WORKING_PARTY_CAPACITY: int = 1000 #size of s_mix
-    MIN_LIFE_HOURS_TO_WORKING_PARTY: int = 19 #hours
-    MAX_LIFE_HOURS_TO_WORKING_PARTY: int = 72 #hours
-    TIME_BEFORE_DATE_BLOCK: int = 1 #hours
-    CHECK_TO_APPEND_TIME: int = 2 # minutes
-    CHECK_TO_TRASH_TIME: int = 2 #minutes
-    TRASH_PARTY: str = "A"   #from s_mix to this party
-    WORKING_PARTY: str = "s_mix" #from s_... to this party
+    NORMAL_WORKING_PARTY_CAPACITY: int = 1000  # size of s_mix
+    MIN_LIFE_HOURS_TO_WORKING_PARTY: int = 19  # hours
+    MAX_LIFE_HOURS_TO_WORKING_PARTY: int = 72  # hours
+    TIME_BEFORE_DATE_BLOCK: int = 1  # hours
+    CHECK_TO_APPEND_TIME: int = 2  # minutes
+    CHECK_TO_TRASH_TIME: int = 2  # minutes
+    TRASH_PARTY: str = "A"  # from s_mix to this party
+    WORKING_PARTY: str = "s_mix"  # from s_... to this party
 
-    
-    
+
 class Settings(BaseSettings):
     api_v1_prefix: str = "/v1"
 

@@ -16,6 +16,10 @@ async def rand_video_keyword(pid, session: AsyncSession = SessionDep):
 
 
 @router.get("/default")
-async def rand_default_keyword(pid, min: int = 4, max: int = 7, session: AsyncSession = SessionDep):
-    res = await keywords_service.get_random_default_keyword(pid=pid, min=min, max=max, session=session)
+async def rand_default_keyword(
+    pid, min: int = 4, max: int = 7, session: AsyncSession = SessionDep
+):
+    res = await keywords_service.get_random_default_keyword(
+        pid=pid, min=min, max=max, session=session
+    )
     return HTMLResponse(res)
