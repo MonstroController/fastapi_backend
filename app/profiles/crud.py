@@ -62,6 +62,7 @@ class ProfilesRepository(BaseRepository):
         )
 
         res = await session.execute(update_stmt)
+        await session.commit()
         logger.info(
             f"For party {party}: update {res.rowcount} profiles to new party: {working_party}"
         )
@@ -91,6 +92,7 @@ class ProfilesRepository(BaseRepository):
             .group_by(ProfilesOrm.party)
         )
         res = await session.execute(query)
+        await session.commit()
         return res.scalars().all()
 
     async def update_spent_profiles_in_working_party(self, session: AsyncSession):
@@ -110,6 +112,7 @@ class ProfilesRepository(BaseRepository):
         logger.info(
             f"Set {res.rowcount} profiles to {settings.profiles.TRASH_PARTY} party from {settings.profiles.WORKING_PARTY}"
         )
+        await session.commit()
         return res.rowcount
 
     async def update_overtime_profiles(self, session: AsyncSession, min_date) -> int:
@@ -128,6 +131,7 @@ class ProfilesRepository(BaseRepository):
         )
         res = await session.execute(query)
         logger.info(f"Set {res.rowcount} profiles to s>72")
+        await session.commit()
         return res.rowcount
 
     async def delete_from_trash_and_overtime(
@@ -140,6 +144,7 @@ class ProfilesRepository(BaseRepository):
         )
         res = await session.execute(query)
         logger.info(f"{res.rowcount} profiles was deleted")
+        await session.commit()
         return res.rowcount
 
 
