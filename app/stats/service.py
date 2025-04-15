@@ -25,7 +25,6 @@ class StatsService(BaseService):
                     subset['minute'], 
                     subset['total_rows'], 
                     label=action, 
-                    marker='o', 
                     color='blue'
                 )
                 axes[idx].set_title(f'{action}')
