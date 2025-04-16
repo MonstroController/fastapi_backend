@@ -10,11 +10,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 router = APIRouter(prefix="/stats", tags=["Results"])
 
 
-@router.get("/minutely-stats")
-async def get_minutely_stats(session: AsyncSession = SessionDep):
-    data = await stats_service.get_minutely_stats(session=session)
+@router.get("/stats")
+async def get_minutely_stats(session: AsyncSession = SessionDep, start_time: str = None, end_time: str = None, interval: str = "hour"):
+    data = await stats_service.get_minutely_stats(session=session, start_time=start_time, end_time=end_time, interval=interval)
     if data.empty:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Нет данных для отображения")
     
-    graphics = await stats_service.create_graphics(df=data)
+    graphics = await stats_service.create_graphics(df=data, interval=interval)
     return StreamingResponse(graphics, media_type="image/png")

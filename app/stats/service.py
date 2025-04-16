@@ -12,17 +12,17 @@ class StatsService(BaseService):
         self.repository = repository
         super().__init__(repository=self.repository)
 
-    async def get_minutely_stats(self, session: AsyncSession):
-        return await self.repository.get_minutely_stats(session=session)
+    async def get_minutely_stats(self, session: AsyncSession, start_time, end_time, interval):
+        return await self.repository.get_minutely_stats(session=session, start_time=start_time, end_time=end_time, interval=interval)
     
-    async def create_graphics(self, df):
+    async def create_graphics(self, df, interval):
         fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(12, 8))
         axes = axes.flatten()
         for idx, action in enumerate(df["action_type"].unique()):
             subset = df[df['action_type'] == action]
             if not subset.empty:
                 axes[idx].plot(
-                    subset['minute'], 
+                    subset[interval], 
                     subset['total_rows'], 
                     label=action, 
                     color='blue'
