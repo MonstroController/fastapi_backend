@@ -9,7 +9,6 @@ class ClickResult(BaseModel):
     pos: int
     copyname: str
     profile_id: int | None
-    data_create: datetime.datetime | None
     yacount: int
     metrikacount: int
     search_type: str
@@ -40,7 +39,6 @@ class ClickResultFilter(BaseModel):
     pos: int | None = None
     copyname: str | None = None
     profile_id: int | None = None
-    data_create: datetime.datetime | None = None
     yacount: int | None = None
     metrikacount: int | None = None
     search_type: str | None = None
