@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, Path, Body, Query
+from fastapi import APIRouter, Depends, Path, Body, Query, HTTPException, status
+from fastapi.responses import StreamingResponse
 from typing import Annotated
 from .service import click_result_service
 from .schemas import ClickResult, ClickResultFilter
@@ -72,4 +73,29 @@ async def get_result_by_profile_id(
 ) -> list[ClickResult]:
     return click_result_service.find_all(
         session=session, filters=ClickResultFilter(profile_id=profile_id)
+    )   
+
+@router.get("/stats/{copyname}")
+async def get_position_stats(
+    copyname: str,
+    period: str | None = Query("24h", description="Filter period: 1h, 12h, 24h, 3d, 7d, 30d, all"),
+    grouping: str | None = Query("1h", description="Group data: 10m, 30m, 1h, 2h, 6h, 12h, 24h"),
+    ask: str | None = Query(None, description="Filter by specific search query"),
+    session: AsyncSession = SessionDep
+):
+    result = await click_result_service.get_clicks_stats(
+        session=session,
+        copyname=copyname,
+        period=period,
+        grouping=grouping,
+        ask=ask
     )
+    
+    df_grouped = result["df_grouped"]
+    latest_pos = result["latest_pos"]
+    
+    if df_grouped.empty:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Нет данных для отображения")
+    
+    graphics = await click_result_service.create_graphics(df_grouped=df_grouped, latest_pos=latest_pos, ask=ask)
+    return StreamingResponse(graphics, media_type="image/png")

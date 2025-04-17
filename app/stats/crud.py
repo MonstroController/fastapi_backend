@@ -47,6 +47,7 @@ class StatsRepository(BaseRepository):
       
         df = pd.DataFrame(data, columns=[interval, "action_type", "total_rows"])
         return df
+    
 
 
 stats_repository: StatsRepository = StatsRepository()

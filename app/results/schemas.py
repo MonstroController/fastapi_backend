@@ -9,7 +9,7 @@ class ClickResult(BaseModel):
     pos: int
     copyname: str
     profile_id: int | None
-    data_create: datetime.datetime
+    data_create: datetime.datetime | None
     yacount: int
     metrikacount: int
     search_type: str

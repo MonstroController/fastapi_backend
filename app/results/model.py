@@ -1,6 +1,6 @@
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, declared_attr
 from typing import Annotated
-from sqlalchemy import text, ForeignKey
+from sqlalchemy import text, ForeignKey, func
 from app.core.base.base_model import Base, idpk
 import datetime
 
@@ -16,7 +16,7 @@ class ClickResultsOrm(Base):
     profile_id: Mapped[int] = mapped_column(
         ForeignKey("profiles.pid", ondelete="SET NULL"), nullable=True
     )
-    data_create: Mapped[datetime.datetime]
+    data_create: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
     yacount: Mapped[int]
     metrikacount: Mapped[int]
     search_type: Mapped[str]

@@ -28,7 +28,6 @@ async def generate_click_result(
         pos=pos,
         copyname=copyname,
         profile_id=profileid,
-        data_create=data_create,
         yacount=yacount,
         metrikacount=metrikacount,
         search_type=search_type,
