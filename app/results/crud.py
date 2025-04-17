@@ -13,8 +13,8 @@ class ClickResultsRepository(BaseRepository):
 
     async def delete_overtime_results(self, session: AsyncSession, min_date):
         """Удаляет результаты которые старше min_date"""
-        print(min_date)
-        query = delete(ClickResultsOrm.pid).where(
+
+        query = delete(ClickResultsOrm).where(
             and_(ClickResultsOrm.data_create <= min_date)
         )
         res = await session.execute(query)

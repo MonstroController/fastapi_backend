@@ -12,10 +12,10 @@ class ClickResultService(BaseService):
 
     async def delete_overtime(self, session: AsyncSession):
         min_date = hours_to_dates(max_hours_life=7 * 24)
-        count = await self.repository.delete_overtime_results(
+        await self.repository.delete_overtime_results(
             session=session, min_date=min_date
         )
-        return count
+     
 
 
 click_result_service: ClickResultService = ClickResultService(
