@@ -94,6 +94,7 @@ async def get_position_stats(
         is_adding=is_adding,
         is_all=is_all
     )
+    
     df_grouped = result["df_grouped"]
     latest_pos = result["latest_pos"]
     addings_count = result["addings_count"]
