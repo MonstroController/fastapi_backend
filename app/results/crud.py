@@ -37,10 +37,10 @@ class ClickResultsRepository(BaseRepository):
                 ClickResultsOrm.fullask
             ).where(ClickResultsOrm.copyname == copyname)
         )
-        
+        logger.info(f"Get clicks data: {ask}")
         # Фильтрация по запросу (ask), если указан
         if ask:
-            query = query.where(ClickResultsOrm.fullask == ask)
+            query = query.where(ClickResultsOrm.keyword == ask)
         
         # Фильтрация по периоду
         if period and period != "all":
@@ -65,6 +65,7 @@ class ClickResultsRepository(BaseRepository):
         query = query.order_by(ClickResultsOrm.data_create)
         result = await session.execute(query)
         data = result.fetchall()
+        logger.info(f"Get clicks data: {len(data)}")
         return data
         
 

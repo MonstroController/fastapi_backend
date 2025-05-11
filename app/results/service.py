@@ -108,6 +108,8 @@ class ClickResultService(BaseService):
             date_format = mdates.DateFormatter('%d.%m %H:%M')
         plt.gca().xaxis.set_major_formatter(date_format)
         
+        if ask:
+            plt.plot(df_grouped["time"], df_grouped["pos"], 'o-', color='#3a7ced', linewidth=1.5, markersize=5)
         # Рисуем график, если данные есть
         if df_grouped is not None and not df_grouped.empty:
             plt.plot(df_grouped["time"], df_grouped["pos"], 'o-', color='#3a7ced', linewidth=1.5, markersize=5, label="С брендовыми")
