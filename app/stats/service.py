@@ -13,31 +13,36 @@ class StatsService(BaseService):
     def __init__(self, repository: StatsRepository):
         self.repository = repository
         super().__init__(repository=self.repository)
+
+
+    async def group(self, df: pd.DataFrame, grouping, is_sum=True):
+        if is_sum:
+            df_grouped = df.set_index('time').groupby(pd.Grouper(freq=grouping)).sum().reset_index()
+        else:
+            df_grouped = df.set_index('time').groupby(pd.Grouper(freq=grouping)).mean().reset_index()
+        return df_grouped
     
-    async def grouping_stats_data(self, df: pd.DataFrame, grouping):
+    async def grouping_stats_data(self, df: pd.DataFrame, grouping, is_sum=True):
         if not df.empty:
             # Вычисляем последнюю индивидуальную позицию    
             latest_row = df.loc[df["time"].idxmax()]
-
-            
-            # Группировка данных
           
             if grouping == '10m':
-                df_grouped = df.set_index('time').groupby(pd.Grouper(freq='10Min')).sum().reset_index()
+                df_grouped = await self.group(df, grouping=grouping, is_sum=is_sum)
             elif grouping == '30m':
-                df_grouped = df.set_index('time').groupby(pd.Grouper(freq='30Min')).sum().reset_index()
+                df_grouped = await self.group(df, grouping=grouping, is_sum=is_sum)
             elif grouping == '1h':
-                df_grouped = df.set_index('time').groupby(pd.Grouper(freq='1h')).sum().reset_index()
+                df_grouped = await self.group(df, grouping=grouping, is_sum=is_sum)
             elif grouping == '2h':
-                df_grouped = df.set_index('time').groupby(pd.Grouper(freq='2h')).sum().reset_index()
+                df_grouped = await self.group(df, grouping=grouping, is_sum=is_sum)
             elif grouping == '6h':
-                df_grouped = df.set_index('time').groupby(pd.Grouper(freq='6h')).sum().reset_index()
+                df_grouped = await self.group(df, grouping=grouping, is_sum=is_sum)
             elif grouping == '12h':
-                df_grouped = df.set_index('time').groupby(pd.Grouper(freq='12h')).sum().reset_index()
+                df_grouped = await self.group(df, grouping=grouping, is_sum=is_sum)
             elif grouping == '24h':
-                df_grouped = df.set_index('time').groupby(pd.Grouper(freq='24h')).sum().reset_index()
+                df_grouped = await self.group(df, grouping=grouping, is_sum=is_sum)
             else:
-                df_grouped = df.set_index('time').groupby(pd.Grouper(freq='1h')).sum().reset_index()
+                df_grouped = await self.group(df, grouping=grouping, is_sum=is_sum)
             
  
             df_grouped = df_grouped.dropna(subset=['count'])
@@ -46,10 +51,10 @@ class StatsService(BaseService):
         else:
             return None
     
-    async def get_stats(self, session: AsyncSession, action_type: str, period, grouping):
+    async def get_stats(self, session: AsyncSession, action_type: str, period, grouping, is_sum=True):
         data =  await self.repository.get_stats_data(session=session, action_type=action_type, period=period)
         df = pd.DataFrame(data, columns=["count", "time"])
-        df_grouped = await self.grouping_stats_data(df, grouping=grouping)
+        df_grouped = await self.grouping_stats_data(df, grouping=grouping, is_sum=is_sum)
         return df_grouped
     
     async def new_create_graphics(self, df_grouped: pd.DataFrame = pd.DataFrame(), period: str = "24h",  total_count: int = 0):
@@ -92,7 +97,8 @@ class StatsService(BaseService):
         plt.ylabel('Количество', fontsize=12)
         plt.grid(True, alpha=0.3)
         plt.title(f'Статистика количества за {period}', fontsize=14)
-        plt.text(0.5, 0.95, f'Всего: {total_count:,}', ha='center', va='center', transform=plt.gca().transAxes, fontsize=12)
+        if total_count:
+            plt.text(0.5, 0.95, f'Всего: {total_count:,}', ha='center', va='center', transform=plt.gca().transAxes, fontsize=12)
     
         plt.subplots_adjust(bottom=0.3)
         

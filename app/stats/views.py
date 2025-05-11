@@ -23,9 +23,15 @@ async def get_minutely_stats(session: AsyncSession = SessionDep, start_time: str
 @router.get("/stats/{action_type}")
 async def get_stats(session: AsyncSession = SessionDep, action_type: str = None,period: str | None = Query("24h", description="Filter period: 1h, 12h, 24h, 3d, 7d, 30d, all"),
     grouping: str | None = Query("1h", description="Group data: 10m, 30m, 1h, 2h, 6h, 12h, 24h"),):
-    data = await stats_service.get_stats(session=session, action_type=action_type, period=period, grouping=grouping)
-    if not data.empty:
-        total_count = data["count"].sum()
+    total_count = 0
+    if action_type in ["trash_party_check", "overtime_party_check", "working_party_check"]:
+        data = await stats_service.get_stats(session=session, action_type=action_type, period=period, grouping=grouping, is_sum=False)
+        
+    else:
+        data = await stats_service.get_stats(session=session, action_type=action_type, period=period, grouping=grouping)
+        if data is not None and not data.empty:
+            total_count = data["count"].sum()
+    if data is not None and not data.empty:
         graphics = await stats_service.new_create_graphics(df_grouped=data, total_count=total_count, period=period)
         return StreamingResponse(graphics, media_type="image/png")
     else:

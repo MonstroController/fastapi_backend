@@ -69,6 +69,14 @@ class ProfilesService(BaseService):
         total = await self.repository.update_spent_profiles_in_working_party(
             session=session
         )
+        count_profiles = await self.repository.count(
+            session=session,
+            filters=ProfileFilters(party=settings.profiles.TRASH_PARTY),
+        )
+        await stats_service.add(
+            session=session,
+            values=StatsFilter(action_type="trash_party_check", affected_rows=count_profiles),
+        )
         await stats_service.add(
             session=session,
             values=StatsFilter(action_type="to_trash", affected_rows=total),
@@ -83,6 +91,14 @@ class ProfilesService(BaseService):
         min_date = hours_to_dates(max_hours_life=max_hours_life)
         total = await self.repository.update_overtime_profiles(
             session=session, min_date=min_date
+        )
+        count_profiles = await self.repository.count(
+            session=session,
+            filters=ProfileFilters(party=settings.profiles.OVERTIME_PARTY),
+        )
+        await stats_service.add(
+            session=session,
+            values=StatsFilter(action_type="overtime_party_check", affected_rows=count_profiles),
         )
         await stats_service.add(
             session=session,

@@ -29,6 +29,7 @@ class ProfilesController(BaseSettings):
     CHECK_TO_TRASH_TIME: int = 2  # minutes
     TRASH_PARTY: str = "A"  # from s_mix to this party
     WORKING_PARTY: str = "s_mix"  # from s_... to this party
+    OVERTIME_PARTY: str = "s>72"  # from s_... to this party
 
 
 class Settings(BaseSettings):
