@@ -11,6 +11,23 @@ services:
       - app
     networks:
       - main
+  broker_redis:
+    image: redis:latest
+    container_name: broker_redis_container
+    ports:
+      - "6381:6381"
+    volumes:
+      - ./broker-redis-data:/broker-data
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    restart: always
+    networks:
+      - main
+
   app:
     build: .
     env_file:
@@ -20,6 +37,28 @@ services:
       - '8000:8000'
     networks:
       - main
+  celery_worker:
+    build: .
+    env_file: .env
+    command: celery -A app.celery_app worker --loglevel=info --pool=solo
+    depends_on:
+      - broker_redis
+      - app
+    volumes:
+      - .:/app
+
+  celery_beat:
+    build: .
+    env_file: .env
+    command: celery -A app.celery_app beat --loglevel=info
+    depends_on:
+      - broker_redis
+      - app
+    volumes:
+      - .:/app
+
+volumes:
+  broker-redis-data:
 
 networks:
   main:

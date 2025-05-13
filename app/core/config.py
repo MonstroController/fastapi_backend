@@ -5,20 +5,30 @@ from pydantic import PostgresDsn, RedisDsn, BaseModel
 BASE_DIR = Path(__file__).parent.parent
 
 
-class DBSettings(BaseSettings):
+class EnvBaseSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+
+class DBSettings(EnvBaseSettings):
     POSTGRES_HOST: str
     POSTGRES_PORT: int
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
+    DSN_1: str
 
     @property
     def DATABASE_URL_asyncpg(self):
         # DSN
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-
-    model_config = SettingsConfigDict(env_file=".env.prod")
-
+    
+    @property
+    def DATABASE_URL_psycopg2(self):
+        # DSN
+        return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+    
+class RedisSettings(EnvBaseSettings):
+    CELERY_BROKER_URL: str
+    CELERY_RESULT_BACKEND: str
 
 class ProfilesController(BaseSettings):
     NORMAL_WORKING_PARTY_CAPACITY: int = 1000  # size of s_mix
@@ -38,6 +48,8 @@ class Settings(BaseSettings):
     db: DBSettings = DBSettings()
 
     profiles: ProfilesController = ProfilesController()
+
+    redis: RedisSettings = RedisSettings()
 
 
 settings = Settings()

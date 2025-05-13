@@ -19,6 +19,35 @@ class ProfilesService(BaseService):
         self.repository = repository
         super().__init__(repository=self.repository)
 
+    async def from_work_parties_to_party(self, party, count, session):
+        min_date, max_date = hours_to_dates(
+            settings.profiles.MIN_LIFE_HOURS_TO_WORKING_PARTY,
+            settings.profiles.MAX_LIFE_HOURS_TO_WORKING_PARTY,
+        )
+        parties = await self.repository.get_parties_for_working_party(
+                session=session, min_date=min_date, max_date=max_date
+            )
+
+        if len(parties) != 0 and (party_fraction := count // len(parties)) != 0:
+            total = 0
+            for party in parties:
+                res_count = await self.repository.update_profiles_to_working_party(
+                    session=session,
+                    party_fraction=party_fraction,
+                    party=party,
+                    min_date=min_date,
+                    max_date=max_date,
+                    working_party=party
+                )
+                total += res_count
+                if res_count < party_fraction:
+                    party_fraction += party_fraction - res_count
+            await stats_service.add(
+                session=session,
+                values=StatsFilter(action_type="to_working", affected_rows=total),
+            )
+
+
     async def check_working_party_for_update(self, session: AsyncSession):
         profiles_count = await self.repository.count(
             session=session,
@@ -32,32 +61,9 @@ class ProfilesService(BaseService):
 
             shortage = settings.profiles.NORMAL_WORKING_PARTY_CAPACITY - profiles_count
 
-            min_date, max_date = hours_to_dates(
-                settings.profiles.MIN_LIFE_HOURS_TO_WORKING_PARTY,
-                settings.profiles.MAX_LIFE_HOURS_TO_WORKING_PARTY,
-            )
-            parties = await self.repository.get_parties_for_working_party(
-                session=session, min_date=min_date, max_date=max_date
-            )
+            await self.from_work_parties_to_party(settings.profiles.WORKING_PARTY, shortage, session)
 
-            if len(parties) != 0 and (party_fraction := shortage // len(parties)) != 0:
-                total = 0
-                for party in parties:
-                    res_count = await self.repository.update_profiles_to_working_party(
-                        session=session,
-                        party_fraction=party_fraction,
-                        party=party,
-                        min_date=min_date,
-                        max_date=max_date,
-                        working_party=settings.profiles.WORKING_PARTY,
-                    )
-                    total += res_count
-                    if res_count < party_fraction:
-                        party_fraction += party_fraction - res_count
-                await stats_service.add(
-                    session=session,
-                    values=StatsFilter(action_type="to_working", affected_rows=total),
-                )
+            
 
     async def from_working_party_to_trash_party(
         self,
