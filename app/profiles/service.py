@@ -37,7 +37,7 @@ class ProfilesService(BaseService):
                     party=party,
                     min_date=min_date,
                     max_date=max_date,
-                    working_party=party
+                    working_party=settings.profiles.WORKING_PARTY
                 )
                 total += res_count
                 if res_count < party_fraction:
