@@ -17,7 +17,7 @@ import redis
 DST_DSN = os.environ.get("DSN_1")
 DAILY_LIMIT = 250   
 
-redis_client = redis.Redis(host='localhost', port=6379, db=3)
+redis_client = redis.Redis(host='broker_redis', port=6379, db=3)
 logger = get_task_logger(__name__)
 
 
