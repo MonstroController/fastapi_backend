@@ -117,10 +117,10 @@ def insert_profiles(profiles):
     cur = conn.cursor()
     
     records = [
-        (p['pid'], p['data_create'] - timedelta(days=15), "rus", p['cookies_len'], p['accounts'], p['is_google'], p['is_yandex'], p['is_mail'], p['is_youtube'], 
-         p['ismobiledevice'], p['platform'], p['platform_version'], p['browser'], p['browser_version'], p['folder'], p['fingerprints'], p['cookies'], p['proxy'], 
+        (p['pid'], p['data_create'] - timedelta(days=15), "rus", 0, p['accounts'], p['is_google'], p['is_yandex'], p['is_mail'], p['is_youtube'], 
+         p['ismobiledevice'], p['platform'], p['platform_version'], p['browser'], p['browser_version'], p['folder'], p['fingerprints'], p['cookies'], "", 
          p['last_date_work'] - timedelta(days=15), p['date_block'] - timedelta(days=15), p['last_visit_sites'], p['last_task'], p['geo'], p['tel'], p['email'], 
-         p['name'], p['mouse_config'], p['domaincount'], p['metrikacount'], p['localstorage'], p['yacount'], p['warm'] - timedelta(days=15))
+         p['name'], p['mouse_config'], 0, 0, p['localstorage'], 0, p['warm'] - timedelta(days=15))
         for p in profiles
     ]
     
