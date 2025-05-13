@@ -13,9 +13,8 @@ services:
       - main
   broker_redis:
     image: redis:latest
-    container_name: broker_redis_container
     ports:
-      - "6381:6381"
+      - "6380:6379"
     volumes:
       - ./broker-redis-data:/broker-data
 
@@ -46,6 +45,8 @@ services:
       - app
     volumes:
       - .:/app
+    networks:
+      - main
 
   celery_beat:
     build: .
@@ -57,6 +58,8 @@ services:
     volumes:
       - .:/app
 
+    networks:
+      - main
 volumes:
   broker-redis-data:
 
