@@ -11,7 +11,7 @@ celery = Celery(
 celery.conf.beat_schedule = {
     "transfer-every-5-minutes": {
         "task": "app.tasks.transfer_profiles",  # ← точно такое имя!
-        "schedule": 30,  # каждые 5 минут
+        "schedule": settings.redis.TRANSFER_PERIOD,  # каждые 5 минут
         "args": (),
     },
 }

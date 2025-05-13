@@ -29,6 +29,9 @@ class DBSettings(EnvBaseSettings):
 class RedisSettings(EnvBaseSettings):
     CELERY_BROKER_URL: str
     CELERY_RESULT_BACKEND: str
+    TRANSFER_PERIOD: int
+    DAY_LIMIT: int
+    CAPACITY_LIMIT: int
 
 class ProfilesController(BaseSettings):
     NORMAL_WORKING_PARTY_CAPACITY: int = 1000  # size of s_mix

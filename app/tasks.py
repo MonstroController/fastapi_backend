@@ -15,7 +15,7 @@ import redis
 # Подключения можно выносить в функции или использовать пул SQLAlchemy
 # SRC_DSN = settings.db.DATABASE_URL_psycopg2
 DST_DSN = os.environ.get("DSN_1")
-DAILY_LIMIT = 250   
+DAILY_LIMIT = settings.redis.DAY_LIMIT  
 
 redis_client = redis.Redis(host='broker_redis', port=6379, db=3)
 logger = get_task_logger(__name__)
@@ -66,7 +66,7 @@ def get_profiles(conn, party, min_date, max_date, party_fraction):
 
 def fetch_profiles(existing):
     profiles = []
-    count = 50 - existing
+    count = settings.redis.CAPACITY_LIMIT - existing
     conn = psycopg2.connect(settings.db.DATABASE_URL_psycopg2)  # Основная база данных
     cur = conn.cursor()
     
