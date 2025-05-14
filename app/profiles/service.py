@@ -53,6 +53,7 @@ class ProfilesService(BaseService):
             session=session,
             filters=ProfileFilters(party=settings.profiles.WORKING_PARTY),
         )
+
         await stats_service.add(
             session=session,
             values=StatsFilter(action_type='working_party_check', affected_rows=profiles_count),
