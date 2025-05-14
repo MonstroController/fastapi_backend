@@ -140,9 +140,9 @@ class ProfilesRepository(BaseRepository):
     ):
         query = delete(ProfilesOrm).where(
             and_(
-                ProfilesOrm.data_create <= min_date, not_(ProfilesOrm.party.like("f_"), not_(ProfilesOrm.party.like("t_")), not_(ProfilesOrm.party.like("p_")), not_(ProfilesOrm.party.like("r_")))
+                ProfilesOrm.data_create <= min_date, not_(ProfilesOrm.party.like("f_")), not_(ProfilesOrm.party.like("t_")), not_(ProfilesOrm.party.like("p_")), not_(ProfilesOrm.party.like("r_")))
             )
-        )
+        
         res = await session.execute(query)
         logger.info(f"{res.rowcount} profiles was deleted")
         await session.commit()

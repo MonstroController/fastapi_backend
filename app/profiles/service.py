@@ -8,6 +8,8 @@ from sqlalchemy import func, select
 from app.core.config import settings
 from app.stats.service import stats_service
 from app.stats.schemas import StatsFilter
+from app.utils.telegram_bot import notify_admins
+import aiohttp
 
 import logging
 
@@ -27,6 +29,12 @@ class ProfilesService(BaseService):
         parties = await self.repository.get_parties_for_working_party(
                 session=session, min_date=min_date, max_date=max_date
             )
+        for party in parties:
+            count = await self.repository.count(session=session,filters=ProfileFilters(party=party))
+            if count < settings.profiles.MINIMUM_WALKING_PARTY_CAPACITY:
+                await notify_admins(f"!!WARNING!!\nВ группe {party} меньше {settings.profiles.MINIMUM_WALKING_PARTY_CAPACITY} профилей: {count}")
+            else:
+                logger.info()
 
         if len(parties) != 0 and (party_fraction := count // len(parties)) != 0:
             total = 0
@@ -53,6 +61,8 @@ class ProfilesService(BaseService):
             session=session,
             filters=ProfileFilters(party=settings.profiles.WORKING_PARTY),
         )
+        if profiles_count < settings.profiles.MINIMUM_WORKING_PARTY_CAPACITY:
+            res = await notify_admins(f"!!WARNING!!\nВ группе s_mix меньше {settings.profiles.MINIMUM_WORKING_PARTY_CAPACITY} профилей: {profiles_count}")
 
         await stats_service.add(
             session=session,
