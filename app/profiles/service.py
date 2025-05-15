@@ -34,7 +34,7 @@ class ProfilesService(BaseService):
             if count < settings.profiles.MINIMUM_WALKING_PARTY_CAPACITY:
                 await notify_admins(f"!!WARNING!!\nВ группe {party} меньше {settings.profiles.MINIMUM_WALKING_PARTY_CAPACITY} профилей: {count}")
             else:
-                logger.info()
+                logger.info(f"Count: {count}")
 
         if len(parties) != 0 and (party_fraction := count // len(parties)) != 0:
             total = 0
