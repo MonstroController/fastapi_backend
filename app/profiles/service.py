@@ -30,11 +30,11 @@ class ProfilesService(BaseService):
                 session=session, min_date=min_date, max_date=max_date
             )
         for party in parties:
-            count = await self.repository.count(session=session,filters=ProfileFilters(party=party))
-            if count < settings.profiles.MINIMUM_WALKING_PARTY_CAPACITY:
-                await notify_admins(f"!!WARNING!!\nВ группe {party} меньше {settings.profiles.MINIMUM_WALKING_PARTY_CAPACITY} профилей: {count}")
+            local_count = await self.repository.count(session=session,filters=ProfileFilters(party=party))
+            if local_count < settings.profiles.MINIMUM_WALKING_PARTY_CAPACITY:
+                await notify_admins(f"!!WARNING!!\nВ группe {party} меньше {settings.profiles.MINIMUM_WALKING_PARTY_CAPACITY} профилей: {local_count}")
             else:
-                logger.info(f"Count: {count}")
+                logger.info(f"Count: {local_count}")
 
         if len(parties) != 0 and (party_fraction := count // len(parties)) != 0:
             total = 0
@@ -69,6 +69,8 @@ class ProfilesService(BaseService):
             session=session,
             values=StatsFilter(action_type='working_party_check', affected_rows=profiles_count),
         )
+        logger.info(f'Profiles count: {profiles_count}')
+        logger.info(f'needed count: {settings.profiles.NORMAL_WORKING_PARTY_CAPACITY}')
         if profiles_count < settings.profiles.NORMAL_WORKING_PARTY_CAPACITY:
 
             shortage = settings.profiles.NORMAL_WORKING_PARTY_CAPACITY - profiles_count
