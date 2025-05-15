@@ -61,6 +61,7 @@ class ProfilesService(BaseService):
             session=session,
             filters=ProfileFilters(party=settings.profiles.WORKING_PARTY),
         )
+        logger.info(f"Pofiles count before alarm: {profiles_count}")
         if profiles_count < settings.profiles.MINIMUM_WORKING_PARTY_CAPACITY:
             res = await notify_admins(f"!!WARNING!!\nВ группе s_mix меньше {settings.profiles.MINIMUM_WORKING_PARTY_CAPACITY} профилей: {profiles_count}")
 

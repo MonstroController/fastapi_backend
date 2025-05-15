@@ -35,8 +35,8 @@ class RedisSettings(EnvBaseSettings):
 
 class ProfilesController(BaseSettings):
     NORMAL_WORKING_PARTY_CAPACITY: int = 1000  # size of s_mix
-    MINIMUM_WORKING_PARTY_CAPACITY: int = 999
-    MINIMUM_WALKING_PARTY_CAPACITY: int = 100000
+    MINIMUM_WORKING_PARTY_CAPACITY: int = 500
+    MINIMUM_WALKING_PARTY_CAPACITY: int = 10000
     MIN_LIFE_HOURS_TO_WORKING_PARTY: int = 19  # hours
     MAX_LIFE_HOURS_TO_WORKING_PARTY: int = 72  # hours
     TIME_BEFORE_DATE_BLOCK: int = 1  # hours
