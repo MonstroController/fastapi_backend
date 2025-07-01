@@ -33,7 +33,7 @@ class RedisSettings(EnvBaseSettings):
     DAY_LIMIT: int
     CAPACITY_LIMIT: int
 
-class ProfilesController(BaseSettings):
+class ProfilesController(EnvBaseSettings):
     NORMAL_WORKING_PARTY_CAPACITY: int = 1000  # size of s_mix
     MINIMUM_WORKING_PARTY_CAPACITY: int = 500
     MINIMUM_WALKING_PARTY_CAPACITY: int = 2000

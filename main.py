@@ -12,6 +12,7 @@ from app.profiles.sheduler import (
     clean_all_parties_overtime_schedule,
     delete_trash_and_overtime,
 )
+from app.core.config import settings
 from app.results.sheduler import delete_overtime_results
 
 logger = setup_logging()
