@@ -125,7 +125,7 @@ class ProfilesRepository(BaseRepository):
                     ProfilesOrm.party.like("s_%"),
                     ProfilesOrm.data_create <= min_date,
                     ProfilesOrm.party != "s>72",
-                    not_(ProfilesOrm.party == "s_mix")
+                    not_(ProfilesOrm.party == "s_mix"),
                 )
             )
             .values(party="s>72")
@@ -140,9 +140,14 @@ class ProfilesRepository(BaseRepository):
     ):
         query = delete(ProfilesOrm).where(
             and_(
-                ProfilesOrm.data_create <= min_date, not_(ProfilesOrm.party.like("f_")), not_(ProfilesOrm.party.like("t_")), not_(ProfilesOrm.party.like("p_")), not_(ProfilesOrm.party.like("r_")))
+                ProfilesOrm.data_create <= min_date,
+                not_(ProfilesOrm.party.like("f_")),
+                not_(ProfilesOrm.party.like("t_")),
+                not_(ProfilesOrm.party.like("p_")),
+                not_(ProfilesOrm.party.like("r_")),
             )
-        
+        )
+
         res = await session.execute(query)
         logger.info(f"{res.rowcount} profiles was deleted")
         await session.commit()

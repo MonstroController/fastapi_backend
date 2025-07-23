@@ -6,7 +6,10 @@ BASE_DIR = Path(__file__).parent.parent
 
 
 class EnvBaseSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+    )
+
 
 class DBSettings(EnvBaseSettings):
     POSTGRES_HOST: str
@@ -20,18 +23,20 @@ class DBSettings(EnvBaseSettings):
     def DATABASE_URL_asyncpg(self):
         # DSN
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-    
+
     @property
     def DATABASE_URL_psycopg2(self):
         # DSN
         return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-    
+
+
 class RedisSettings(EnvBaseSettings):
     CELERY_BROKER_URL: str
     CELERY_RESULT_BACKEND: str
     TRANSFER_PERIOD: int
     DAY_LIMIT: int
     CAPACITY_LIMIT: int
+
 
 class ProfilesController(EnvBaseSettings):
     NORMAL_WORKING_PARTY_CAPACITY: int = 1000  # size of s_mix
@@ -45,6 +50,7 @@ class ProfilesController(EnvBaseSettings):
     TRASH_PARTY: str = "A"  # from s_mix to this party
     WORKING_PARTY: str = "s_mix"  # from s_... to this party
     OVERTIME_PARTY: str = "s>72"  # from s_... to this party
+
 
 class TelegramBotSettings(EnvBaseSettings):
     TELEGRAM_BOT_URL: str

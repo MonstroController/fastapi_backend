@@ -53,7 +53,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[dict, None]:
 
         scheduler.add_job(
             delete_trash_and_overtime,
-            trigger=IntervalTrigger(minutes=2), max_instances=5,
+            trigger=IntervalTrigger(minutes=2),
+            max_instances=5,
             id="currency_delete_parties",
         )
 

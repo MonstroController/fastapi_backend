@@ -27,12 +27,16 @@ class ProfilesService(BaseService):
             settings.profiles.MAX_LIFE_HOURS_TO_WORKING_PARTY,
         )
         parties = await self.repository.get_parties_for_working_party(
-                session=session, min_date=min_date, max_date=max_date
-            )
+            session=session, min_date=min_date, max_date=max_date
+        )
         for party in parties:
-            local_count = await self.repository.count(session=session,filters=ProfileFilters(party=party))
+            local_count = await self.repository.count(
+                session=session, filters=ProfileFilters(party=party)
+            )
             if local_count < settings.profiles.MINIMUM_WALKING_PARTY_CAPACITY:
-                await notify_admins(f"!!WARNING!!\nВ группe {party} меньше {settings.profiles.MINIMUM_WALKING_PARTY_CAPACITY} профилей: {local_count}")
+                await notify_admins(
+                    f"!!WARNING!!\nВ группe {party} меньше {settings.profiles.MINIMUM_WALKING_PARTY_CAPACITY} профилей: {local_count}"
+                )
             else:
                 logger.info(f"Count: {local_count}")
 
@@ -45,7 +49,7 @@ class ProfilesService(BaseService):
                     party=party,
                     min_date=min_date,
                     max_date=max_date,
-                    working_party=settings.profiles.WORKING_PARTY
+                    working_party=settings.profiles.WORKING_PARTY,
                 )
                 total += res_count
                 if res_count < party_fraction:
@@ -55,29 +59,32 @@ class ProfilesService(BaseService):
                 values=StatsFilter(action_type="to_working", affected_rows=total),
             )
 
-
     async def check_working_party_for_update(self, session: AsyncSession):
         profiles_count = await self.repository.count(
             session=session,
             filters=ProfileFilters(party=settings.profiles.WORKING_PARTY),
         )
         logger.info(f"Pofiles count before alarm: {profiles_count}")
-        if profiles_count < settings.profiles.MINIMUM_WORKING_PARTY_CAPACITY:
-            res = await notify_admins(f"!!WARNING!!\nВ группе s_mix меньше {settings.profiles.MINIMUM_WORKING_PARTY_CAPACITY} профилей: {profiles_count}")
+        # if profiles_count < settings.profiles.MINIMUM_WORKING_PARTY_CAPACITY:
+        #     res = await notify_admins(
+        #         f"!!WARNING!!\nВ группе s_mix меньше {settings.profiles.MINIMUM_WORKING_PARTY_CAPACITY} профилей: {profiles_count}"
+        #     )
 
         await stats_service.add(
             session=session,
-            values=StatsFilter(action_type='working_party_check', affected_rows=profiles_count),
+            values=StatsFilter(
+                action_type="working_party_check", affected_rows=profiles_count
+            ),
         )
-        logger.info(f'Profiles count: {profiles_count}')
-        logger.info(f'needed count: {settings.profiles.NORMAL_WORKING_PARTY_CAPACITY}')
+        logger.info(f"Profiles count: {profiles_count}")
+        logger.info(f"needed count: {settings.profiles.NORMAL_WORKING_PARTY_CAPACITY}")
         if profiles_count < settings.profiles.NORMAL_WORKING_PARTY_CAPACITY:
 
             shortage = settings.profiles.NORMAL_WORKING_PARTY_CAPACITY - profiles_count
 
-            await self.from_work_parties_to_party(settings.profiles.WORKING_PARTY, shortage, session)
-
-            
+            await self.from_work_parties_to_party(
+                settings.profiles.WORKING_PARTY, shortage, session
+            )
 
     async def from_working_party_to_trash_party(
         self,
@@ -95,7 +102,9 @@ class ProfilesService(BaseService):
         )
         await stats_service.add(
             session=session,
-            values=StatsFilter(action_type="trash_party_check", affected_rows=count_profiles),
+            values=StatsFilter(
+                action_type="trash_party_check", affected_rows=count_profiles
+            ),
         )
         await stats_service.add(
             session=session,
@@ -118,7 +127,9 @@ class ProfilesService(BaseService):
         )
         await stats_service.add(
             session=session,
-            values=StatsFilter(action_type="overtime_party_check", affected_rows=count_profiles),
+            values=StatsFilter(
+                action_type="overtime_party_check", affected_rows=count_profiles
+            ),
         )
         await stats_service.add(
             session=session,
