@@ -1,5 +1,8 @@
 from sqlalchemy.orm import mapped_column, Mapped
+from sqlalchemy import func, TIMESTAMP
 from app.core.base.base_model import Base, idpk
+from datetime import datetime
+
 
 
 class VideoKeywordsOrm(Base):
@@ -42,6 +45,19 @@ class Keywords_7_Orm(Base):
     pid: Mapped[idpk]
     text: Mapped[str] = mapped_column(nullable=True)
     frequency: Mapped[int]
+
+class MailKeywordsOrm(Base):
+    __tablename__ = "mail_keys"
+    pid: Mapped[idpk]
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now(), default=func.now())
+    text: Mapped[str] = mapped_column(nullable=True)
+
+class GoogleKeywordsOrm(Base):
+    __tablename__ = "google_keys"
+    pid: Mapped[idpk]
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now(), default=func.now())
+    text: Mapped[str] = mapped_column(nullable=True)
+
 
 
 keywords_models = {

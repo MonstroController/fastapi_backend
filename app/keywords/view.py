@@ -11,7 +11,7 @@ router = APIRouter(prefix="/keywords", tags=["Keywords"])
 
 @router.get("/video")
 async def rand_video_keyword(pid, session: AsyncSession = SessionDep):
-    res = await keywords_service.get_random_video_keyword(pid=pid, session=session)
+    res = await keywords_service.get_random_video_keyword(session=session)
     return HTMLResponse(res)
 
 
@@ -20,6 +20,11 @@ async def rand_default_keyword(
     pid, min: int = 4, max: int = 7, session: AsyncSession = SessionDep
 ):
     res = await keywords_service.get_random_default_keyword(
-        pid=pid, min=min, max=max, session=session
+        min=min, max=max, session=session
     )
+    return HTMLResponse(res)
+
+@router.get("/mail")
+async def rand_video_keyword(session: AsyncSession = SessionDep):
+    res = await keywords_service.get_random_mail_keyword(session=session)
     return HTMLResponse(res)

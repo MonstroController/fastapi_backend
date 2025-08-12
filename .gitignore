@@ -9,6 +9,7 @@ nginx.conf
 rabbitmq
 broker-redis-data
 logs
+certs/
 
 # C extensions
 *.so

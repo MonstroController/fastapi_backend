@@ -14,6 +14,11 @@ celery.conf.beat_schedule = {
         "schedule": settings.redis.TRANSFER_PERIOD,  # каждые 5 минут
         "args": (),
     },
+    "mail-parser-every-6-minutes": {
+        "task": "app.tasks.mail_parser",  # ← точно такое имя!
+        "schedule": settings.redis.MAIL_PARSER_PERIOD,  # каждые 5 минут
+        "args": (),
+    },
 }
 
 celery.conf.timezone = "UTC"

@@ -2,7 +2,7 @@ from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import PostgresDsn, RedisDsn, BaseModel
 
-BASE_DIR = Path(__file__).parent.parent
+BASE_DIR = Path(__file__).parent.parent.parent
 
 
 class EnvBaseSettings(BaseSettings):
@@ -34,6 +34,7 @@ class RedisSettings(EnvBaseSettings):
     CELERY_BROKER_URL: str
     CELERY_RESULT_BACKEND: str
     TRANSFER_PERIOD: int
+    MAIL_PARSER_PERIOD: int
     DAY_LIMIT: int
     CAPACITY_LIMIT: int
 
@@ -52,6 +53,11 @@ class ProfilesController(EnvBaseSettings):
     OVERTIME_PARTY: str = "s>72"  # from s_... to this party
 
 
+class AuthJWT(BaseModel):
+    private_key_path: Path = BASE_DIR / "certs" / "jwt-private.pem"
+    public_key_path: Path = BASE_DIR / "certs" / "jwt-public.pem"
+    algorithm: str = "RS256"
+
 class TelegramBotSettings(EnvBaseSettings):
     TELEGRAM_BOT_URL: str
 
@@ -66,6 +72,8 @@ class Settings(BaseSettings):
     redis: RedisSettings = RedisSettings()
 
     tg_bot: TelegramBotSettings = TelegramBotSettings()
+
+    auth_jwt: AuthJWT = AuthJWT()
 
 
 settings = Settings()
