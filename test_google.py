@@ -14,6 +14,7 @@ SEEN_KEY = "last_question_google"
 
 
 async def get_last_questions(last_seen_text: str | None = None, last_seen_theme: str | None = None):
+    print("start")
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
@@ -34,7 +35,7 @@ async def get_last_questions(last_seen_text: str | None = None, last_seen_theme:
                 found_last = True
                 break
 
-            logger.debug(f"Новая тема: {title}")
+            print(f"Новая тема: {title}")
             results.append({"title": title})
     
         for card_theme in cards_themes:
@@ -50,6 +51,7 @@ async def get_last_questions(last_seen_text: str | None = None, last_seen_theme:
         await browser.close()
     
     new_last = results[0]["title"] if results else last_seen_text
+    logger.info(f"New last: {new_last}")
     if not found_last and results:
         logger.info("⚠ Последняя сохранённая тема не найдена. Возможно, она вытеснена новыми.")
 

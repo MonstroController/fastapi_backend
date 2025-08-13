@@ -18,7 +18,6 @@ logger = setup_logging()
 scheduler = AsyncIOScheduler()
 
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[dict, None]:
     global logger

@@ -1,7 +1,7 @@
 from app.core.base.base_repository import BaseRepository
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text
-from .model import VideoKeywordsOrm, keywords_models, MailKeywordsOrm
+from .model import GoogleKeywordsOrm, VideoKeywordsOrm, keywords_models, MailKeywordsOrm
 import logging
 import random
 
@@ -25,6 +25,17 @@ class MailKeywordsRepository(BaseRepository):
         keyword = keyword.fetchone()
         logger.info(f"Keyword: {keyword}")
         return keyword[0]
+
+class GoogleKeywordsRepository(BaseRepository):
+    model = GoogleKeywordsOrm
+
+    async def get_random_keyword(self, session: AsyncSession):
+        query = """SELECT text FROM google_keys ORDER BY RANDOM() LIMIT 1"""
+        keyword = await session.execute(text(query))
+        keyword = keyword.fetchone()
+        logger.info(f"Keyword: {keyword}")
+        return keyword[0]
     
 keywords_repository: KeywordsRepository = KeywordsRepository()
 mail_repo: MailKeywordsRepository = MailKeywordsRepository()
+google_repo: GoogleKeywordsRepository = GoogleKeywordsRepository()

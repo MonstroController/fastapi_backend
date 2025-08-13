@@ -18,7 +18,6 @@ services:
   app:
     build: .
     env_file:
-      - .env.prod
       - .env
     ports:
       - '8000:8000'

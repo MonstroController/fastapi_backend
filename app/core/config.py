@@ -35,8 +35,12 @@ class RedisSettings(EnvBaseSettings):
     CELERY_RESULT_BACKEND: str
     TRANSFER_PERIOD: int
     MAIL_PARSER_PERIOD: int
+    GOOGLE_PARSER_PERIOD: int
+    GOOGLE_AND_MAIL_CLEAN_PERIOD: int
     DAY_LIMIT: int
     CAPACITY_LIMIT: int
+    GOOGLE_DATA_LIFETIME_DAYS: int = 5
+    MAIL_DATA_LIFETIME_DAYS: int = 5
 
 
 class ProfilesController(EnvBaseSettings):
@@ -52,11 +56,13 @@ class ProfilesController(EnvBaseSettings):
     WORKING_PARTY: str = "s_mix"  # from s_... to this party
     OVERTIME_PARTY: str = "s>72"  # from s_... to this party
 
+    MAX_DAYS_LIFE_OF_PROFILE: int  # days
 
 class AuthJWT(BaseModel):
     private_key_path: Path = BASE_DIR / "certs" / "jwt-private.pem"
     public_key_path: Path = BASE_DIR / "certs" / "jwt-public.pem"
     algorithm: str = "RS256"
+
 
 class TelegramBotSettings(EnvBaseSettings):
     TELEGRAM_BOT_URL: str

@@ -137,7 +137,7 @@ class ProfilesService(BaseService):
         )
 
     async def delete_trash_and_overtime(
-        self, session: AsyncSession, days_limit: int = 5
+        self, session: AsyncSession, days_limit: int = settings.profiles.MAX_DAYS_LIFE_OF_PROFILE
     ):
         min_date = hours_to_dates(max_hours_life=days_limit * 24)
         total = await self.repository.delete_from_trash_and_overtime(

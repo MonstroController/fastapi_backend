@@ -1,5 +1,6 @@
 from celery import Celery
 from app.core.config import settings
+from celery.schedules import timedelta
 
 
 celery = Celery(
@@ -10,15 +11,25 @@ celery = Celery(
 
 celery.conf.beat_schedule = {
     "transfer-every-5-minutes": {
-        "task": "app.tasks.transfer_profiles",  # ← точно такое имя!
-        "schedule": settings.redis.TRANSFER_PERIOD,  # каждые 5 минут
+        "task": "app.tasks.transfer_profiles",
+        "schedule": settings.redis.TRANSFER_PERIOD,
         "args": (),
     },
-    "mail-parser-every-6-minutes": {
-        "task": "app.tasks.mail_parser",  # ← точно такое имя!
-        "schedule": settings.redis.MAIL_PARSER_PERIOD,  # каждые 5 минут
+    "mail-parser-every-5-minutes": {
+        "task": "app.tasks.mail_parser",
+        "schedule": settings.redis.MAIL_PARSER_PERIOD,
         "args": (),
     },
+    "google-parser-every-5-minutes": {
+        "task": "app.tasks.google_parser",
+        "schedule": settings.redis.GOOGLE_PARSER_PERIOD,
+        "args": (),
+    },
+    "cleanup-old-data-google-and-mail": {
+        "task": "app.tasks.google_and_mail_cleaner",
+        "schedule": settings.redis.GOOGLE_AND_MAIL_CLEAN_PERIOD,
+        "args": (),
+    }
 }
 
 celery.conf.timezone = "UTC"

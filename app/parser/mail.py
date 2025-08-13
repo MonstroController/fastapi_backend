@@ -11,22 +11,27 @@ import re
 import json
 import psycopg2
 
+from app.stats.schemas import StatsFilter
+from app.stats.service import stats_service
+
 SEEN_KEY = "last_question_mail"
 
 logger = get_task_logger(__name__)
 
-def get_seen_questions(redis_client=get_redis_client()) -> dict[int, str]:
-    raw = redis_client.get(SEEN_KEY)
-    if not raw:
-        return {}
-    return raw
 
-def save_seen_questions(data: str, redis_client=get_redis_client()):
+def get_seen_questions_mail(redis_client=get_redis_client()) -> str:
+    raw = redis_client.get(SEEN_KEY)
+    return raw.decode("utf-8") if raw else ""
+
+
+def save_seen_questions_mail(data: str, redis_client=get_redis_client()):
     redis_client.set(SEEN_KEY, data)
 
+
 def extract_question_id(href: str) -> int:
-    match = re.search(r'/question/(\d+)', href)
+    match = re.search(r"/question/(\d+)", href)
     return int(match.group(1)) if match else -1
+
 
 async def scroll_to_bottom(page, max_scrolls=10):
     """Прокручивает страницу вниз до конца или до max_scrolls попыток."""
@@ -37,25 +42,28 @@ async def scroll_to_bottom(page, max_scrolls=10):
             break
         previous_height = current_height
         await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-        await asyncio.sleep(1)  
+        await asyncio.sleep(1)
 
-def add_new_questions(questions):
+
+def add_new_questions_mail(questions):
     conn = psycopg2.connect(settings.db.DATABASE_URL_psycopg2)  # Основная база данных
     cur = conn.cursor()
+    stats_query = """INSERT INTO stats VALUES (DEFAULT, %s, %s, DEFAULT)"""
     query = """INSERT INTO mail_keys VALUES (DEFAULT, DEFAULT, %s)"""
-    records = [(question["title"], ) for question in questions]
-    logger.info(f"Records: {records}")
+    records = [(question,) for question in questions]
+
     cur.executemany(query, records)
+    cur.execute(stats_query, ("to_mail", str(len(questions))))
     conn.commit()
     cur.close()
     conn.close()
 
 
-async def get_last_questions(last):
+async def get_last_questions_mail(last):
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
-        await page.goto('https://otvet.mail.ru/')
+        await page.goto("https://otvet.mail.ru/")
         await page.wait_for_selector('div[class^="_Card_"]')
 
         await scroll_to_bottom(page)
@@ -70,35 +78,28 @@ async def get_last_questions(last):
             if not link:
                 continue
 
-            href = await link.get_attribute('href')
+            href = await link.get_attribute("href")
             if not href:
                 continue
 
-            qid = extract_question_id(href)
-            if qid == last:
-                logger.info(f"Вопрос {qid} уже был. Останавливаемся.")
-                break
-
-            span = await link.query_selector('span')
+            span = await link.query_selector("span")
             if not span:
                 continue
 
             title = await span.inner_text()
+            if last == title:
+                logger.info(f"Вопрос: '{title}' уже был, останавливаемся")
+                break
 
-            results.append({
-                "qid": qid,
-                "title": title.strip(),
-            })
-
-            new_seen_questions[qid] = title.strip()
+            results.append(
+                title.strip(),
+            )
 
         await browser.close()
-        seen_questions = new_seen_questions
         last = None
-        for key in seen_questions.keys():
-            last = key
-            break
-        logger.info(f"\n✅ Найдено {len(results)} новых вопрос(ов):")
-        add_new_questions(results)
-        logger.info("Вопросы добавлены в базу")
+        if results:
+            last = results[0]
+            logger.info(f"\n✅ Найдено {len(results)} новых вопрос(ов):")
+            add_new_questions_mail(results)
+            logger.info(f"Последний: {last}")
         return results, last
