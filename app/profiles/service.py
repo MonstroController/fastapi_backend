@@ -4,7 +4,7 @@ from .schemas import ProfileRead, ProfileFilters
 from .utils import hours_to_dates
 from app.core.base.base_service import BaseService
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from app.core.config import settings
 from app.stats.service import stats_service
 from app.stats.schemas import StatsFilter
@@ -65,10 +65,10 @@ class ProfilesService(BaseService):
             filters=ProfileFilters(party=settings.profiles.WORKING_PARTY),
         )
         logger.info(f"Pofiles count before alarm: {profiles_count}")
-        # if profiles_count < settings.profiles.MINIMUM_WORKING_PARTY_CAPACITY:
-        #     res = await notify_admins(
-        #         f"!!WARNING!!\nВ группе s_mix меньше {settings.profiles.MINIMUM_WORKING_PARTY_CAPACITY} профилей: {profiles_count}"
-        #     )
+        if profiles_count < settings.profiles.MINIMUM_WORKING_PARTY_CAPACITY:
+            res = await notify_admins(
+                f"!!WARNING!!\nВ группе s_mix меньше {settings.profiles.MINIMUM_WORKING_PARTY_CAPACITY} профилей: {profiles_count}"
+            )
 
         await stats_service.add(
             session=session,
@@ -103,12 +103,12 @@ class ProfilesService(BaseService):
         await stats_service.add(
             session=session,
             values=StatsFilter(
-                action_type="trash_party_check", affected_rows=count_profiles
+                action_type="used_party_check", affected_rows=count_profiles
             ),
         )
         await stats_service.add(
             session=session,
-            values=StatsFilter(action_type="to_trash", affected_rows=total),
+            values=StatsFilter(action_type="used", affected_rows=total),
         )
 
     async def clean_to_overtime_party(
@@ -137,7 +137,9 @@ class ProfilesService(BaseService):
         )
 
     async def delete_trash_and_overtime(
-        self, session: AsyncSession, days_limit: int = settings.profiles.MAX_DAYS_LIFE_OF_PROFILE
+        self,
+        session: AsyncSession,
+        days_limit: int = settings.profiles.MAX_DAYS_LIFE_OF_PROFILE,
     ):
         min_date = hours_to_dates(max_hours_life=days_limit * 24)
         total = await self.repository.delete_from_trash_and_overtime(
@@ -149,6 +151,25 @@ class ProfilesService(BaseService):
             session=session,
             values=StatsFilter(action_type="deleted", affected_rows=total),
         )
+
+    async def check_farm_profiles(self, session: AsyncSession):
+        """
+        Проверяет сколько профилей нафармилось за последние 10 минут
+        и заносит статистику как farm
+        """
+        ten_minutes_ago = func.now() - text("interval '10 minutes'")
+        farm_count = await self.repository.count_profiles_in_time_interval(
+            session=session, from_date=ten_minutes_ago
+        )
+
+        logger.info(f"За последние 10 минут нафармлено профилей: {farm_count}")
+
+        await stats_service.add(
+            session=session,
+            values=StatsFilter(action_type="farm", affected_rows=farm_count),
+        )
+
+        return farm_count
 
 
 profiles_service: ProfilesService = ProfilesService(repository=profiles_repository)

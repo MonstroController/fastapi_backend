@@ -20,3 +20,7 @@ async def clean_all_parties_overtime_schedule(session):
 @session_manager.connection(commit=True)
 async def delete_trash_and_overtime(session):
     await profiles_service.delete_trash_and_overtime(session)
+
+@session_manager.connection(commit=True)
+async def check_farm_profiles(session):
+    await profiles_service.check_farm_profiles(session)

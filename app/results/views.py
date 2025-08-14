@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, Path, Body, Query, HTTPException, status
 from fastapi.responses import StreamingResponse
 from typing import Annotated
+
+from app.auth.validation import require_admin, require_operator
 from .service import click_result_service
 from .schemas import ClickResult, ClickResultFilter
 from app.dependencies.results import generate_click_result
@@ -8,10 +10,10 @@ from app.dependencies.results import generate_click_result
 from app.core.session_manager import SessionDep, TransactionSessionDep
 from sqlalchemy.ext.asyncio import AsyncSession
 
-router = APIRouter(prefix="/results", tags=["Results"])
+router = APIRouter(prefix="/results", tags=["Results"], dependencies=[Depends(require_operator)])
 
 
-@router.get("/upload")
+@router.get("/upload", dependencies=[Depends(require_admin)])
 async def get_info_from_monstro(
     click_result=Depends(generate_click_result),
     session: AsyncSession = TransactionSessionDep,

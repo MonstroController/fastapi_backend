@@ -3,15 +3,19 @@ from .schemas import ProfileRead, ProfileFilters, SelectionParameters
 from .service import profiles_service
 from app.core.session_manager import SessionDep
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.auth.validation import validate_token
+from app.auth.validation import require_admin, validate_token
 
 
-router = APIRouter(prefix="/profiles", tags=["Profiles"], dependencies=[Depends(validate_token)])
+router = APIRouter(
+    prefix="/profiles", tags=["Profiles"], dependencies=[Depends(require_admin)]
+)
 
 
 @router.get("/{pid}")
 async def get_profile_by_pid(pid, session: AsyncSession = SessionDep) -> ProfileRead:
-    profile = await profiles_service.find_one_or_none_by_pid(session=session, data_pid=int(pid))
+    profile = await profiles_service.find_one_or_none_by_pid(
+        session=session, data_pid=int(pid)
+    )
     if not profile:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return profile

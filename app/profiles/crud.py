@@ -153,5 +153,39 @@ class ProfilesRepository(BaseRepository):
         await session.commit()
         return res.rowcount
 
+    async def count_profiles_in_time_interval(
+        self, session: AsyncSession, from_date, to_date=None
+    ) -> int:
+        """
+        Подсчитывает количество профилей созданных в заданном интервале времени
+
+        Args:
+            session: Сессия базы данных
+            from_date: Дата начала интервала
+            to_date: Дата конца интервала (если None, то до текущего момента)
+
+        Returns:
+            Количество профилей в интервале
+        """
+        if to_date is None:
+            to_date = func.now()
+
+        query = (
+            select(func.count(ProfilesOrm.pid))
+            .select_from(ProfilesOrm)
+            .where(
+                and_(
+                    ProfilesOrm.data_create >= from_date,
+                    ProfilesOrm.data_create <= to_date,
+                )
+            )
+        )
+
+        result = await session.execute(query)
+        count = result.scalar()
+
+        logger.info(f"Найдено {count} профилей в интервале с {from_date} по {to_date}")
+        return count
+
 
 profiles_repository: ProfilesRepository = ProfilesRepository()

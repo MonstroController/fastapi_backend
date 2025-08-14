@@ -5,6 +5,7 @@ from celery import Celery, result
 from celery.utils.log import get_task_logger
 from playwright.async_api import async_playwright
 import psycopg2
+import string
 
 from app.core.config import settings
 from app.core.session_manager import session_manager
@@ -16,6 +17,14 @@ app = Celery("tasks")
 logger = get_task_logger(__name__)
 
 SEEN_KEY = "last_question_google"
+
+
+def clean_text_from_punctuation(text: str) -> str:
+    """
+    Удаляет все знаки пунктуации из текста, оставляя только буквы, цифры и пробелы
+    """
+    cleaned = re.sub(r"[^\w\s]", "", text)
+    return cleaned
 
 
 def get_seen_questions_google(redis_client=get_redis_client()) -> str:
@@ -52,7 +61,6 @@ def delete_old_google_and_mail_questions(google_last_date, mail_last_date):
         tuple: (количество удаленных записей из google_keys, количество удаленных записей из mail_keys)
     """
 
-    # Преобразуем даты в правильный формат, если они переданы как строки
     if isinstance(google_last_date, str):
         try:
             google_last_date = datetime.datetime.fromisoformat(
@@ -77,7 +85,7 @@ def delete_old_google_and_mail_questions(google_last_date, mail_last_date):
     cur = conn.cursor()
 
     try:
-        
+
         google_query = """DELETE FROM google_keys WHERE created_at < %s"""
         cur.execute(google_query, (google_last_date,))
         google_deleted = cur.rowcount
@@ -133,7 +141,11 @@ async def get_last_questions_google(
                 logger.debug(f"Уже видел: {title}")
                 found_last = True
                 break
-            results.append({"title": title})
+
+            cleaned_title = clean_text_from_punctuation(title)
+
+            if cleaned_title:
+                results.append({"title": cleaned_title})
 
         for card_theme in cards_themes:
             title = (await card_theme.inner_text()).strip()
@@ -142,7 +154,9 @@ async def get_last_questions_google(
                 found_last = True
                 break
 
-            results_theme.append({"title": title})
+            cleaned_title = clean_text_from_punctuation(title)
+            if cleaned_title:
+                results_theme.append({"title": cleaned_title})
 
         await browser.close()
 

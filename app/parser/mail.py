@@ -10,6 +10,7 @@ import datetime
 import re
 import json
 import psycopg2
+import string
 
 from app.stats.schemas import StatsFilter
 from app.stats.service import stats_service
@@ -17,6 +18,14 @@ from app.stats.service import stats_service
 SEEN_KEY = "last_question_mail"
 
 logger = get_task_logger(__name__)
+
+
+def clean_text_from_punctuation(text: str) -> str:
+    """
+    Удаляет все знаки пунктуации из текста, оставляя только буквы, цифры и пробелы
+    """
+    cleaned = re.sub(r"[^\w\s]", "", text)
+    return cleaned
 
 
 def get_seen_questions_mail(redis_client=get_redis_client()) -> str:
@@ -46,7 +55,7 @@ async def scroll_to_bottom(page, max_scrolls=10):
 
 
 def add_new_questions_mail(questions):
-    conn = psycopg2.connect(settings.db.DATABASE_URL_psycopg2)  # Основная база данных
+    conn = psycopg2.connect(settings.db.DATABASE_URL_psycopg2)
     cur = conn.cursor()
     stats_query = """INSERT INTO stats VALUES (DEFAULT, %s, %s, DEFAULT)"""
     query = """INSERT INTO mail_keys VALUES (DEFAULT, DEFAULT, %s)"""
@@ -71,7 +80,6 @@ async def get_last_questions_mail(last):
         question_cards = await page.query_selector_all('div[class^="_Card_"]')
 
         results = []
-        new_seen_questions: dict[int, str] = {}
 
         for card in question_cards:
             link = await card.query_selector('a[href^="/question/"]')
@@ -91,9 +99,10 @@ async def get_last_questions_mail(last):
                 logger.info(f"Вопрос: '{title}' уже был, останавливаемся")
                 break
 
-            results.append(
-                title.strip(),
-            )
+            cleaned_title = clean_text_from_punctuation(title.strip())
+
+            if cleaned_title:
+                results.append(cleaned_title)
 
         await browser.close()
         last = None

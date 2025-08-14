@@ -11,6 +11,7 @@ from app.profiles.sheduler import (
     clean_working_party_schedule,
     clean_all_parties_overtime_schedule,
     delete_trash_and_overtime,
+    check_farm_profiles
 )
 from app.results.sheduler import delete_overtime_results
 
@@ -63,6 +64,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[dict, None]:
             trigger=IntervalTrigger(minutes=5),
             id="currency_delete_results",
             replace_existing=True,
+        )
+        scheduler.add_job(
+        check_farm_profiles,
+        trigger=IntervalTrigger(minutes=10),
+        id="check_farm_profiles",
+        replace_existing=True,
         )
         scheduler.start()
         logger.info("Планировщик обновления ")

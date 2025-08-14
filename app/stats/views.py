@@ -5,10 +5,10 @@ from .service import stats_service
 from .schemas import Stats, StatsFilter
 
 from app.core.session_manager import SessionDep, TransactionSessionDep
-from app.auth.validation import validate_token
+from app.auth.validation import require_operator, validate_token
 from sqlalchemy.ext.asyncio import AsyncSession
 
-router = APIRouter(prefix="/stats", tags=["Stats"])
+router = APIRouter(prefix="/stats", tags=["Stats"], dependencies=[Depends(require_operator)])
 
 
 @router.get("/stats/{action_type}")
@@ -82,10 +82,11 @@ async def get_overlay_stats(
         # Проверяем, что все типы валидны
         valid_types = [
             "working_party_check",
-            "trash_party_check",
+            "used_party_check",
             "overtime_party_check",
             "to_working",
-            "to_trash",
+            "used",
+            "farm",
             "to_overtime",
             "deleted",
             "to_mail",
@@ -141,7 +142,7 @@ async def get_profiles_comparison(
     Специализированный эндпоинт для сравнения статистики профилей.
     Показывает количество профилей в разных группах.
     """
-    action_types = ["working_party_check", "trash_party_check", "overtime_party_check"]
+    action_types = ["working_party_check", "used_party_check", "overtime_party_check"]
 
     try:
         graphics = await stats_service.create_comparison_graphics(
@@ -178,7 +179,7 @@ async def get_operations_comparison(
     Специализированный эндпоинт для сравнения операций с профилями.
     Показывает количество перемещений и удалений профилей.
     """
-    action_types = ["to_working", "to_trash", "to_overtime", "deleted"]
+    action_types = ["to_working", "used", "to_overtime", "deleted"]
 
     try:
         graphics = await stats_service.create_comparison_graphics(

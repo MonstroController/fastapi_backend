@@ -48,7 +48,7 @@ class ProfilesController(EnvBaseSettings):
     MINIMUM_WORKING_PARTY_CAPACITY: int = 500
     MINIMUM_WALKING_PARTY_CAPACITY: int = 2000
     MIN_LIFE_HOURS_TO_WORKING_PARTY: int = 19  # hours
-    MAX_LIFE_HOURS_TO_WORKING_PARTY: int = 72  # hours
+    MAX_LIFE_HOURS_TO_WORKING_PARTY: int = 25  # hours
     TIME_BEFORE_DATE_BLOCK: int = 1  # hours
     CHECK_TO_APPEND_TIME: int = 2  # minutes
     CHECK_TO_TRASH_TIME: int = 2  # minutes
