@@ -6,12 +6,12 @@ import os
 
 
 # Настройки подключения
-username = "gen_user"
-password = "wuosy4z8t4"
-host = "109.68.213.209"
-port = "5432"
-database = "default_db"
-table_name = "keys_7"
+username = ""
+password = ""
+host = ""
+port = ""
+database = ""
+table_name = ""
 
 # Создаем подключение
 conn_string = f"postgresql://{username}:{password}@{host}:{port}/{database}"
