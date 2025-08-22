@@ -8,6 +8,10 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+import os
+from dotenv import load_dotenv  # Добавьте этот импорт
+
+load_dotenv()
 
 # Base model definition
 Base = declarative_base()
@@ -155,14 +159,14 @@ class FingerprintCollector:
             self.engine.dispose()
             print("Database connection closed")
 
-# Configuration
-username = ""
-password = ""
-host = ""
-port = ""
-database = ""
+# Configuration from environment variables
+username = os.getenv('POSTGRES_USER')
+password = os.getenv('POSTGRES_PASSWORD')
+host = os.getenv('POSTGRES_HOST')
+port = os.getenv('POSTGRES_PORT')
+database = os.getenv('POSTGRES_DB')
 DB_URL = f"postgresql://{username}:{password}@{host}:{port}/{database}"
-API_URL = ""
+API_URL = os.getenv('FINGERPRINTS_F5_URL')
 CHECK_INTERVAL = 1.0  # Interval in seconds
 
 def main():
