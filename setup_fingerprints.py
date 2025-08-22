@@ -18,7 +18,7 @@ Base = declarative_base()
 
 class BrowserFingerprintF5(Base):
     """Model for browser_fingerprints_f5 table"""
-    __tablename__ = 'browser_fingerprints_f5'
+    __tablename__ = "browser_fingerprints_f5"
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     data = Column(JSONB, nullable=False)
@@ -56,7 +56,7 @@ class FingerprintCollector:
                 echo=False
             )
             
-            # Create table if it doesn't exist
+            # Create table if it doesn"t exist
             Base.metadata.create_all(self.engine)
             
             # Create session factory
@@ -73,7 +73,7 @@ class FingerprintCollector:
         """Calculate SHA-256 hash for fingerprint data"""
         # Sort keys for consistency
         sorted_data = json.dumps(data, sort_keys=True, ensure_ascii=False)
-        return hashlib.sha256(sorted_data.encode('utf-8')).hexdigest()
+        return hashlib.sha256(sorted_data.encode("utf-8")).hexdigest()
 
     def fetch_fingerprint(self):
         """Fetch fingerprint from API"""
@@ -160,13 +160,13 @@ class FingerprintCollector:
             print("Database connection closed")
 
 # Configuration from environment variables
-username = os.getenv('POSTGRES_USER')
-password = os.getenv('POSTGRES_PASSWORD')
-host = os.getenv('POSTGRES_HOST')
-port = os.getenv('POSTGRES_PORT')
-database = os.getenv('POSTGRES_DB')
+username = os.getenv("POSTGRES_USER")
+password = os.getenv("POSTGRES_PASSWORD")
+host = os.getenv("POSTGRES_HOST")
+port = os.getenv("POSTGRES_PORT")
+database = os.getenv("POSTGRES_DB")
 DB_URL = f"postgresql://{username}:{password}@{host}:{port}/{database}"
-API_URL = os.getenv('FINGERPRINTS_F5_URL')
+API_URL = os.getenv("FINGERPRINTS_F5_URL")
 CHECK_INTERVAL = 1.0  # Interval in seconds
 
 def main():
