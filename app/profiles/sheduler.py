@@ -9,8 +9,11 @@ async def update_working_party_schedule(session):
 
 @session_manager.connection(commit=True)
 async def clean_working_party_schedule(session):
-    await profiles_service.from_working_party_to_trash_party(session=session)
+    await profiles_service.from_working_party_to_hold_party(session=session)
 
+@session_manager.connection(commit=True)
+async def clean_hold_party_schedule(session):
+    await profiles_service.from_hold_party_to_trash_party(session=session)
 
 @session_manager.connection(commit=True)
 async def clean_all_parties_overtime_schedule(session):

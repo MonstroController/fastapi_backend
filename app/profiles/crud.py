@@ -106,11 +106,30 @@ class ProfilesRepository(BaseRepository):
                     ProfilesOrm.folder.op("~")("[^1,]"),
                 )
             )
+            .values(party=settings.profiles.HOLD_PARTY)
+        )
+        res = await session.execute(query)
+        logger.info(
+            f"Set {res.rowcount} profiles to {settings.profiles.HOLD_PARTY} party from {settings.profiles.WORKING_PARTY}"
+        )
+        await session.commit()
+        return res.rowcount
+
+    async def update_spent_profiles_in_hold_party(self, session: AsyncSession):
+        """Находит профиля из ожидающей группы, которые уже закончили ожидание"""
+        query = (
+            update(ProfilesOrm)
+            .where(  # TODO условие на время (1 час)
+                and_(
+                    ProfilesOrm.party == settings.profiles.HOLD_PARTY,
+                    # ProfilesOrm.
+                )
+            )
             .values(party=settings.profiles.TRASH_PARTY)
         )
         res = await session.execute(query)
         logger.info(
-            f"Set {res.rowcount} profiles to {settings.profiles.TRASH_PARTY} party from {settings.profiles.WORKING_PARTY}"
+            f"Set {res.rowcount} profiles to {settings.profiles.TRASH_PARTY} party from {settings.profiles.HOLD_PARTY}"
         )
         await session.commit()
         return res.rowcount

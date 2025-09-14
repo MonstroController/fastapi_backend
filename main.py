@@ -9,6 +9,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from app.profiles.sheduler import (
     update_working_party_schedule,
     clean_working_party_schedule,
+    clean_hold_party_schedule,
     clean_all_parties_overtime_schedule,
     delete_trash_and_overtime,
     check_farm_profiles
@@ -43,6 +44,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[dict, None]:
             clean_working_party_schedule,
             trigger=IntervalTrigger(minutes=1),
             id="currency_clear_working_party",
+            replace_existing=True,
+        )
+        scheduler.add_job(
+            clean_hold_party_schedule,
+            trigger=IntervalTrigger(minutes=60),
+            id="currency_clear_hold_party",
             replace_existing=True,
         )
         scheduler.add_job(

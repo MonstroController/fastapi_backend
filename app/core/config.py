@@ -52,7 +52,8 @@ class ProfilesController(EnvBaseSettings):
     TIME_BEFORE_DATE_BLOCK: int = 1  # hours
     CHECK_TO_APPEND_TIME: int = 2  # minutes
     CHECK_TO_TRASH_TIME: int = 2  # minutes
-    TRASH_PARTY: str = "A"  # from s_mix to this party
+    TRASH_PARTY: str = "A"  # from A0 to this party
+    HOLD_PARTY: str = "A0" # from s_mix to this party
     WORKING_PARTY: str = "s_mix"  # from s_... to this party
     OVERTIME_PARTY: str = "s>72"  # from s_... to this party
 

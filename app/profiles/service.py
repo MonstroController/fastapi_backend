@@ -86,10 +86,10 @@ class ProfilesService(BaseService):
                 settings.profiles.WORKING_PARTY, shortage, session
             )
 
-    async def from_working_party_to_trash_party(
+    async def from_working_party_to_hold_party(
         self,
         session: AsyncSession,
-        trash_party: str = settings.profiles.TRASH_PARTY,
+        hold_party: str = settings.profiles.HOLD_PARTY,
         big_age_party="s_>72",
     ):
 
@@ -98,7 +98,7 @@ class ProfilesService(BaseService):
         )
         count_profiles = await self.repository.count(
             session=session,
-            filters=ProfileFilters(party=settings.profiles.TRASH_PARTY),
+            filters=ProfileFilters(party=settings.profiles.HOLD_PARTY),
         )
         await stats_service.add(
             session=session,
@@ -109,6 +109,31 @@ class ProfilesService(BaseService):
         await stats_service.add(
             session=session,
             values=StatsFilter(action_type="used", affected_rows=total),
+        )
+
+    async def from_hold_party_to_trash_party(
+        self,
+        session: AsyncSession,
+        trash_party: str = settings.profiles.TRASH_PARTY,
+        big_age_party="s_>72",
+    ):
+
+        total = await self.repository.update_spent_profiles_in_hold_party(
+            session=session
+        )
+        count_profiles = await self.repository.count(
+            session=session,
+            filters=ProfileFilters(party=settings.profiles.TRASH_PARTY),
+        )
+        await stats_service.add(
+            session=session,
+            values=StatsFilter(
+                action_type="hold_party_check", affected_rows=count_profiles
+            ),
+        )
+        await stats_service.add(
+            session=session,
+            values=StatsFilter(action_type="hold", affected_rows=total),
         )
 
     async def clean_to_overtime_party(
