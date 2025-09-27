@@ -107,7 +107,8 @@ class ProfilesRepository(BaseRepository):
                     ProfilesOrm.folder.op("~")("[^1,]"),
                 )
             )
-            .values(party=settings.profiles.HOLD_PARTY)
+            .values(party=settings.profiles.HOLD_PARTY,
+                    last_date_work=func.now())
         )
         res = await session.execute(query)
         logger.info(
