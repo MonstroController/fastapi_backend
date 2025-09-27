@@ -8,6 +8,7 @@ import logging
 from app.stats.service import stats_service
 from app.stats.schemas import StatsFilter
 from .utils import hours_to_dates
+from datetime import timedelta
 
 
 logger = logging.getLogger(__name__)
@@ -119,10 +120,12 @@ class ProfilesRepository(BaseRepository):
         """Находит профиля из ожидающей группы, которые уже закончили ожидание"""
         query = (
             update(ProfilesOrm)
-            .where(  # TODO условие на время (1 час)
+            .where(
                 and_(
                     ProfilesOrm.party == settings.profiles.HOLD_PARTY,
-                    # ProfilesOrm.
+                    ProfilesOrm.last_date_work <= (
+                        func.now() - timedelta(hours=settings.profiles.TIME_IN_HOLD_PARTY)
+                    ),
                 )
             )
             .values(party=settings.profiles.TRASH_PARTY)

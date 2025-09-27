@@ -48,7 +48,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[dict, None]:
         )
         scheduler.add_job(
             clean_hold_party_schedule,
-            trigger=IntervalTrigger(minutes=60),
+            trigger=IntervalTrigger(minutes=1),
             id="currency_clear_hold_party",
             replace_existing=True,
         )
